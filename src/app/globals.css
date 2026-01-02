@@ -59,3 +59,13 @@ body {
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: #000; }
 ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+@media (max-width: 768px) {
+  body {
+    /* Na9ss l'padding bach l'contenu ytle3 */
+    padding-top: 60px !important; 
+  }
+
+  h1 {
+    font-size: 1.8rem !important; /* Titres sghar */
+  }
+}

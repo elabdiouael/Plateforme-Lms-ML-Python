@@ -64,3 +64,25 @@
   font-style: italic;
   text-align: center;
 }
+/* --- MOBILE FIXES --- */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column; /* Rje3 koulchi vertical */
+    height: auto; /* Tl9 l'hauteur bach yjbd 3la ra7to */
+    max-height: 80vh;
+  }
+
+  .codePanel {
+    flex: none;
+    height: 300px; /* L'code yakhod nss chacha */
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .infoPanel {
+    flex: none;
+    height: auto;
+    padding: 15px;
+    min-height: 150px;
+  }
+}

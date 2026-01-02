@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { slides, chapters } from '@/data/content';
 
 // Import des Composants Modulaires
@@ -10,17 +10,24 @@ import ExerciseSlide from '@/components/ui/ExerciseSlide/ExerciseSlide';
 import InteractiveCode from '@/components/ui/InteractiveCode/InteractiveCode';
 import Typewriter from '@/components/ui/Typewriter';
 
-// 👇 IMPORT DU MOTEUR 3D (OPTIMISÉ)
+// 👇 Moteur 3D & Effets
 import TiltWrapper from '@/components/ui/3D/TiltWrapper';
-
-// 👇 IMPORT DE L'EFFET SHOCKWAVE (NOUVEAU)
 import ClickRipple from '@/components/ui/Effects/ClickRipple';
 
 export default function Home() {
   const [started, setStarted] = useState(false);
   const [index, setIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   
   const currentSlide = slides[index];
+
+  // --- RESPONSIVE CHECK ---
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // --- LOGIC: Déterminer la section pour le Background ---
   const getSectionType = () => {
@@ -48,7 +55,7 @@ export default function Home() {
   if (!started) {
     return (
       <main>
-        <Background /> {/* Le fond 3D tourne en arrière plan */}
+        <Background section="landing" /> 
         <Landing onStart={() => setStarted(true)} />
       </main>
     );
@@ -59,23 +66,23 @@ export default function Home() {
     <main style={{ 
       minHeight: '100vh', 
       color: '#d4d4d4',
-      // 👇 FIX IMPORTANT: Espace kbir (140px) bach navbar "Hbila" matghttich 3la titre
-      paddingTop: '140px', 
+      // 👇 Padding dynamique: 100px f Mobile, 140px f Desktop
+      paddingTop: isMobile ? '100px' : '140px', 
       paddingBottom: '40px',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       position: 'relative',
-      overflowX: 'hidden' // Évite le scroll horizontal causé par la 3D
+      overflowX: 'hidden' 
     }}>
       
       {/* 1. Background Dynamique */}
       <Background section={getSectionType()} /> 
 
-      {/* ✨ 2. THE CYBER RIPPLE (Effet Click Global) */}
+      {/* 2. Effet Ripple (Shockwave) */}
       <ClickRipple />
 
-      {/* 3. Navbar Fixe (HUD Style) */}
+      {/* 3. Navbar Fixe (HUD Style + Burger Mobile) */}
       <Navbar onNavigate={handleNavigate} currentIndex={index} />
 
       {/* 4. CONTENT AREA */}
@@ -84,7 +91,6 @@ export default function Home() {
         {/* --- TYPE: EXERCICE --- */}
         {currentSlide.type === 'exercise' && (
           <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-            {/* ✨ 3D MAGIC: La carte d'exercice flotte et suit la souris */}
             <TiltWrapper>
               <ExerciseSlide 
                 key={currentSlide.id}
@@ -97,21 +103,20 @@ export default function Home() {
 
         {/* --- TYPE: THEORIE --- */}
         {currentSlide.type === 'theory' && (
-          /* ✨ 3D MAGIC: Le panneau de théorie devient holographique */
           <TiltWrapper>
             <div className="glass-panel" style={{ 
-              padding: '40px', 
+              padding: isMobile ? '25px' : '40px', 
               borderRadius: '16px', 
-              background: 'rgba(20, 20, 20, 0.85)', /* Transparence ajustée pour le glow */
+              background: 'rgba(20, 20, 20, 0.85)',
               backdropFilter: 'blur(12px)',
               border: '1px solid rgba(255,255,255,0.08)',
               textAlign: 'left',
               animation: 'fadeIn 0.5s',
-              height: '100%', // Important pour que le tilt prenne toute la hauteur
+              height: '100%',
               boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
             }}>
               <h1 style={{ 
-                fontSize: '2.5rem', 
+                fontSize: isMobile ? '1.8rem' : '2.5rem', 
                 marginBottom: '30px', 
                 textAlign: 'center',
                 background: 'linear-gradient(to right, #fff, #999)', 
@@ -122,7 +127,7 @@ export default function Home() {
                 {currentSlide.title}
               </h1>
               
-              <div style={{ fontSize: '1.2rem', lineHeight: '1.8', marginBottom: '40px' }}>
+              <div style={{ fontSize: isMobile ? '1rem' : '1.2rem', lineHeight: '1.8', marginBottom: '40px' }}>
                 {currentSlide.content.split('\n').map((line: string, i: number) => {
                   const cleanLine = line.trim();
                   const isHeader = cleanLine.startsWith('**');
@@ -155,7 +160,7 @@ export default function Home() {
                 })}
               </div>
               
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
                  {index > 0 && (
                   <button onClick={goPrev} style={btnSecondary}>← Retour</button>
                 )}
@@ -170,8 +175,8 @@ export default function Home() {
         {/* --- TYPE: CODE INTERACTIF --- */}
         {currentSlide.type === 'interactive-code' && (
           <div style={{ animation: 'fadeIn 0.5s' }}>
-            <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <h2 style={{ color: '#fff', fontSize: '1.8rem', fontFamily: 'Consolas' }}>
+            <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
+              <h2 style={{ color: '#fff', fontSize: isMobile ? '1.4rem' : '1.8rem', fontFamily: 'Consolas' }}>
                 {currentSlide.title}
               </h2>
               <span style={{ 
@@ -187,7 +192,6 @@ export default function Home() {
               </span>
             </div>
             
-            {/* ✨ 3D MAGIC: Le Code Editor devient un objet physique */}
             <TiltWrapper>
                <div style={{ 
                  background: '#1e1e1e', 
@@ -219,7 +223,7 @@ export default function Home() {
   );
 }
 
-// Styles Boutons (Cyberpunk Polish)
+// Styles Boutons Responsive
 const btnPrimary = {
   padding: '12px 30px', fontSize: '1rem', background: '#007acc', 
   color: 'white', border: 'none', borderRadius: '6px', 
@@ -227,12 +231,16 @@ const btnPrimary = {
   boxShadow: '0 0 20px rgba(0, 122, 204, 0.4)',
   transition: 'all 0.2s',
   textTransform: 'uppercase' as const,
-  letterSpacing: '1px'
+  letterSpacing: '1px',
+  flex: '1 1 auto', // Responsive
+  minWidth: '150px'
 };
 
 const btnSecondary = {
   padding: '12px 30px', fontSize: '1rem', background: 'transparent', 
   color: '#aaa', border: '1px solid #444', borderRadius: '6px', 
   cursor: 'pointer', fontFamily: 'Consolas',
-  transition: 'all 0.2s'
+  transition: 'all 0.2s',
+  flex: '1 1 auto',
+  minWidth: '120px'
 };

@@ -1,0 +1,148 @@
+/* src/components/ui/ExerciseSlide/ExerciseSlide.module.css */
+
+.card {
+  /* Glassmorphism Dark */
+  background: rgba(15, 15, 15, 0.7); 
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  
+  padding: 30px;
+  border-radius: 16px;
+  width: 100%;
+  
+  /* L'ANIMATION IMPORTANTE (Floating Effect) */
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Header (Level & Title) */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 15px;
+}
+
+.levelBadge {
+  background: rgba(255, 255, 255, 0.05);
+  color: #888;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-family: 'Consolas', monospace;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* QUESTION EN ROUGE (Demande Spécifique) */
+.question {
+  color: #ff4757; /* Rouge Vif */
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 25px;
+  text-shadow: 0 0 15px rgba(255, 71, 87, 0.25);
+  line-height: 1.5;
+  min-height: 60px; /* Évite le saut quand le texte s'écrit */
+}
+
+/* Grille des Options */
+.optionsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.optionBtn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ccc;
+  padding: 18px;
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Consolas', monospace;
+  font-size: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.optionBtn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.optionBtn:disabled {
+  cursor: default;
+}
+
+/* Feedback Zone */
+.feedback {
+  margin-top: 30px;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  animation: fadeIn 0.3s ease;
+}
+
+.nextBtn {
+  background: #007acc;
+  color: white;
+  border: none;
+  padding: 10px 30px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-family: 'Consolas', monospace;
+  box-shadow: 0 0 15px rgba(0, 122, 204, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.nextBtn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 25px rgba(0, 122, 204, 0.6);
+}
+
+/* --- ANIMATIONS --- */
+
+/* Animation de flottaison (Tiran f lfada2) */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  }
+  50% {
+    transform: translateY(-15px); /* Monte de 15px */
+    box-shadow: 0 40px 70px rgba(0,0,0,0.3); /* L'ombre s'éloigne */
+  }
+  100% {
+    transform: translateY(0px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes popIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}

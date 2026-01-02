@@ -1,0 +1,61 @@
+:root {
+  --bg-dark: #0a0a0a;
+  --glass: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --neon-blue: #00f3ff;
+  --neon-purple: #bc13fe;
+  --neon-green: #0aff0a;
+  --neon-red: #ff0055;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background-color: var(--bg-dark);
+  color: #fff;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* --- ANIMATIONS 3D --- */
+@keyframes float {
+  0% { transform: translateY(0px) rotateX(0deg); }
+  50% { transform: translateY(-20px) rotateX(5deg); }
+  100% { transform: translateY(0px) rotateX(0deg); }
+}
+
+@keyframes spin3D {
+  0% { transform: rotateY(0deg) rotateX(10deg); }
+  100% { transform: rotateY(360deg) rotateX(10deg); }
+}
+
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 10px var(--color), 0 0 20px var(--color); }
+  50% { box-shadow: 0 0 20px var(--color), 0 0 40px var(--color); }
+  100% { box-shadow: 0 0 10px var(--color), 0 0 20px var(--color); }
+}
+
+/* --- UTILS --- */
+.glass-panel {
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.text-gradient {
+  background: linear-gradient(to right, #fff, #aaa);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.neon-text {
+  text-shadow: 0 0 10px currentColor;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #000; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }

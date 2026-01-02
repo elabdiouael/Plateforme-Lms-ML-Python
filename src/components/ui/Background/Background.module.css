@@ -1,0 +1,35 @@
+.container {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background-color: #050505;
+  z-index: -1;
+  overflow: hidden;
+  perspective: 1000px; /* Effet 3D */
+}
+
+/* La Grille Mouvante */
+.grid {
+  position: absolute;
+  width: 200%; height: 200%;
+  bottom: -50%; left: -50%;
+  background-image: 
+    linear-gradient(rgba(0, 243, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 243, 255, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+  transform: rotateX(45deg); /* Perspective */
+  animation: planeMove 20s linear infinite;
+}
+
+/* Les Orbs (Lumières) */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.4;
+  transition: all 0.2s ease-out; /* Smooth follow mouse */
+}
+
+@keyframes planeMove {
+  0% { transform: rotateX(45deg) translateY(0); }
+  100% { transform: rotateX(45deg) translateY(50px); }
+}

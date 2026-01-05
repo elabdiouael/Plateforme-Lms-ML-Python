@@ -67,8 +67,8 @@ class SimpleKMedoids:
         dists = pairwise_distances(X, medoids)
         
         # 4. Assigner chaque point au chef le plus proche
-        labels = np.argmin(dists, axis=1)
-        return labels`,
+        labels = np.argmin(dists, axis=1) 
+        return labels #[10, 2, 50, 100, 5]`,
     explanations: [
       { line: 1, text: "Pandas & Numpy : Les outils de base pour charger et manipuler les données." },
       { line: 4, text: "Seaborn : Permet de créer des graphiques esthétiques et lisibles (mieux que Matplotlib seul)." },

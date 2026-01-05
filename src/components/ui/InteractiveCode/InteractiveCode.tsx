@@ -1,7 +1,6 @@
 'use client';
 import React, { useState } from 'react';
 import styles from './InteractiveCode.module.css';
-import Typewriter from '../Typewriter';
 
 interface LineExplanation {
   line: number;
@@ -20,55 +19,65 @@ export default function InteractiveCode({ code, explanations = [], globalExplana
 
   const activeExplanation = explanations.find(e => e.line === activeLine);
 
-  // Advanced Syntax Highlighting (Class-based pour éviter les bugs regex)
+  // --- ROBUST SYNTAX HIGHLIGHTING ---
+  // Uses placeholders to prevent HTML tag conflicts (like 'class')
   const highlightSyntax = (line: string) => {
+    // 1. Escape HTML special chars
     let processed = line
-      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
 
-    // 1. Strings (Orange) - On le fait en premier pour protéger le contenu
-    // On utilise un placeholder temporaire pour ne pas casser les autres regex
-    const strings: string[] = [];
-    processed = processed.replace(/(".*?"|'.*?')/g, (match) => {
-      strings.push(match);
-      return `__STR_${strings.length - 1}__`;
-    });
+    // Temporary storage for protected content
+    const placeholders: string[] = [];
+    const store = (content: string, className: string) => {
+      placeholders.push(`<span class="${className}">${content}</span>`);
+      return `___PH_${placeholders.length - 1}___`;
+    };
 
-    // 2. Comments (Green)
-    if (processed.trim().startsWith('#')) {
-      // Si toute la ligne est un commentaire
-      processed = `<span class="${styles.tokenComment}">${processed}</span>`;
-    } else {
-        // Commentaire inline (à la fin de la ligne)
-        // On doit faire attention à ne pas matcher le # dans les strings (déjà protégés)
-        processed = processed.replace(/(#.*)/g, `<span class="${styles.tokenComment}">$1</span>`);
+    // 2. Protect Strings (Orange)
+    processed = processed.replace(/(".*?"|'.*?')/g, (match) => store(match, styles.tokenString));
 
-        // 3. Keywords (Violet)
-        const keywords = ["def", "class", "if", "else", "elif", "return", "import", "from", "print", "for", "in", "match", "case", "with", "as", "pass", "break", "continue"];
-        keywords.forEach(kw => {
-          const regex = new RegExp(`\\b(${kw})\\b`, 'g');
-          processed = processed.replace(regex, `<span class="${styles.tokenKeyword}">$1</span>`);
-        });
-
-        // 4. Built-ins & Logic (Cyan)
-        const builtins = ["range", "len", "enumerate", "zip", "int", "float", "str", "list", "dict", "set", "abs", "round"];
-        builtins.forEach(bi => {
-          const regex = new RegExp(`\\b(${bi})\\b`, 'g');
-          processed = processed.replace(regex, `<span class="${styles.tokenBuiltin}">$1</span>`);
-        });
-        
-        // 5. Booléens & Null (Bleu)
-        processed = processed.replace(/\b(True|False|None)\b/g, `<span class="${styles.tokenBool}">$1</span>`);
-
-        // 6. Numbers (Light Green)
-        // Le bug était ici : le regex matchait les chiffres dans les codes Hexa.
-        // Maintenant qu'on utilise des classes CSS, il n'y a PLUS de codes Hexa dans la string 'processed' !
-        processed = processed.replace(/\b(\d+)\b/g, `<span class="${styles.tokenNumber}">$1</span>`);
+    // 3. Protect Comments (Green)
+    if (processed.includes('#')) {
+      const parts = processed.split('#');
+      const codePart = parts[0];
+      const commentPart = '#' + parts.slice(1).join('#');
+      processed = codePart + store(commentPart, styles.tokenComment);
     }
 
-    // Restore Strings
-    processed = processed.replace(/__STR_(\d+)__/g, (_, id) => {
-      return `<span class="${styles.tokenString}">${strings[Number(id)]}</span>`;
+    // 4. Keywords & Builtins
+    const keywords = ["def", "class", "if", "else", "elif", "return", "import", "from", "print", "for", "in", "match", "case", "with", "as", "pass", "break", "continue", "self", "try", "except"];
+    const builtins = ["range", "len", "enumerate", "zip", "int", "float", "str", "list", "dict", "set", "abs", "round", "np", "pd", "plt", "sns"];
+
+    const replaceWords = (text: string, words: string[], style: string) => {
+      // Regex matches whole words only
+      const regex = new RegExp(`\\b(${words.join('|')})\\b`, 'g');
+      return text.replace(regex, (match) => {
+        if (match.startsWith("___PH")) return match; // Skip if inside placeholder
+        return store(match, style);
+      });
+    };
+
+    processed = replaceWords(processed, keywords, styles.tokenKeyword);
+    processed = replaceWords(processed, builtins, styles.tokenBuiltin);
+
+    // 5. Numbers (Light Green)
+    processed = processed.replace(/\b(\d+)\b/g, (match) => {
+       if (match.startsWith("___PH")) return match;
+       return store(match, styles.tokenNumber);
     });
+
+    // 6. Restore Placeholders (Iterative for safety)
+    let hasPlaceholders = true;
+    while (hasPlaceholders) {
+      hasPlaceholders = false;
+      processed = processed.replace(/___PH_(\d+)___/g, (_, id) => {
+        hasPlaceholders = true;
+        return placeholders[Number(id)];
+      });
+      if (!processed.includes("___PH_")) hasPlaceholders = false;
+    }
 
     return processed;
   };
@@ -87,34 +96,35 @@ export default function InteractiveCode({ code, explanations = [], globalExplana
             <div className={`${styles.dot} ${styles.green}`}></div>
           </div>
           <div className={styles.tabTitle}>main.py</div>
-          <div className={styles.status}>
-            <div className={styles.statusDot}></div>
-            LIVE
-          </div>
+          <div className={styles.status}>LIVE</div>
         </div>
 
         {/* BODY */}
         <div className={styles.body}>
           
-          {/* GAUCHE : CODE */}
+          {/* LEFT: CODE */}
           <div className={styles.codeArea}>
             {lines.map((lineContent, i) => {
               const lineNum = i + 1;
               const hasInfo = explanations.some(e => e.line === lineNum);
               const isActive = activeLine === lineNum;
-              const isDimmed = activeLine !== null && !isActive;
-
+              
               return (
                 <div 
                   key={i}
                   className={`${styles.lineRow} ${isActive ? styles.activeRow : ''}`}
                   onMouseEnter={() => hasInfo && setActiveLine(lineNum)}
                   onMouseLeave={() => setActiveLine(null)}
-                  style={{ opacity: hasInfo ? 1 : 0.7 }}
+                  style={{ opacity: hasInfo ? 1 : (activeLine ? 0.4 : 0.8) }}
                 >
-                  <span className={styles.lineNum}>{lineNum}</span>
+                  <span style={{ 
+                    minWidth: '30px', textAlign: 'right', marginRight: '20px', 
+                    color: '#52525b', fontSize: '0.8rem', userSelect: 'none' 
+                  }}>
+                    {lineNum}
+                  </span>
                   <span 
-                    className={`${styles.codeContent} ${isDimmed ? styles.dimmed : ''}`}
+                    className={styles.codeContent}
                     dangerouslySetInnerHTML={{ __html: highlightSyntax(lineContent) }} 
                   />
                 </div>
@@ -122,32 +132,35 @@ export default function InteractiveCode({ code, explanations = [], globalExplana
             })}
           </div>
 
-          {/* DROITE : ANALYSE */}
+          {/* RIGHT: ANALYSIS HUD */}
           <div className={styles.infoArea}>
             <div className={styles.gridBg}></div>
             
             {activeExplanation ? (
               <div className={styles.infoContent} key={`exp-${activeLine}`}>
-                <div className={styles.infoLabel}>
-                  <span>⚡ ANALYSE LIGNE {activeLine}</span>
+                <div style={{ 
+                  color: '#00f3ff', fontFamily: 'Consolas', fontSize: '0.75rem', 
+                  letterSpacing: '2px', marginBottom: '15px', borderBottom: '1px solid rgba(0,243,255,0.3)',
+                  paddingBottom: '5px' 
+                }}>
+                  ⚡ ANALYSE LIGNE {activeLine}
                 </div>
                 <div className={styles.infoText}>
-                  <Typewriter text={activeExplanation.text} speed={15} color="#fff" />
+                  {activeExplanation.text}
                 </div>
               </div>
             ) : (
               <div className={styles.infoContent} key="global">
-                <div className={styles.infoLabel}>
-                  <span>🧠 LOGIQUE DU MODULE</span>
+                <div style={{ 
+                  color: '#bc13fe', fontFamily: 'Consolas', fontSize: '0.75rem', 
+                  letterSpacing: '2px', marginBottom: '15px', borderBottom: '1px solid rgba(188,19,254,0.3)',
+                  paddingBottom: '5px' 
+                }}>
+                  🧠 LOGIQUE DU MODULE
                 </div>
                 <div className={styles.infoText}>
-                   {globalExplanation ? (
-                     globalExplanation
-                   ) : (
-                     <div className={styles.emptyState}>
-                       <div className={styles.scannerLine}></div>
-                       <span>En attente de sélection...</span>
-                     </div>
+                   {globalExplanation ? globalExplanation : (
+                     <span style={{opacity: 0.5}}>Survolez une ligne pour voir l'analyse...</span>
                    )}
                 </div>
               </div>

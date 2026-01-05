@@ -1,3 +1,4 @@
+// src/components/Navbar.tsx
 'use client';
 import React, { useState, useEffect } from 'react';
 import { slides, chapters } from '@/data/content';
@@ -8,10 +9,10 @@ interface NavbarProps {
   currentIndex: number;
 }
 
-// Configuration des Séances
+// --- CONFIGURATION DES SÉANCES ---
 const SESSIONS = {
   S1: ["Exercices", "Algorithmes", "Data Structures", "OOP"],
-  S2: ["Project Prepa"]
+  S2: ["Project Prepa", "Project DS"] // <-- 1. AJOUT DE PROJECT DS
 };
 
 export default function Navbar({ onNavigate, currentIndex }: NavbarProps) {
@@ -19,7 +20,7 @@ export default function Navbar({ onNavigate, currentIndex }: NavbarProps) {
   const [hoveredSection, setHoveredSection] = useState<string | null>(null);
   const [expandedMobileSection, setExpandedMobileSection] = useState<string | null>(null);
   
-  // NOUVEAU : State pour la Session (Par défaut S1)
+  // State pour la Session (Par défaut S1)
   const [activeSession, setActiveSession] = useState<'S1' | 'S2'>('S1');
   
   // Smart Scroll Logic
@@ -43,17 +44,13 @@ export default function Navbar({ onNavigate, currentIndex }: NavbarProps) {
   }, [lastScrollY, isMobileOpen]);
 
   // --- LOGIC DE FILTRAGE ---
-  // On récupère toutes les sections
   const allSections = Object.entries(chapters);
   
-  // On ne garde que celles de la session active
   const visibleSections = allSections.filter(([name]) => 
     SESSIONS[activeSession].includes(name)
   );
 
-  const getSectionSlides = (sectionName: string, startIndex: number, nextIndex?: number) => {
-    // Astuce pour trouver la fin de la section même si elle n'est pas affichée
-    // On cherche l'index global dans 'chapters' pour calculer la longueur
+  const getSectionSlides = (sectionName: string, startIndex: number) => {
     const keys = Object.keys(chapters);
     const keyIndex = keys.indexOf(sectionName);
     const nextKey = keys[keyIndex + 1];
@@ -66,21 +63,31 @@ export default function Navbar({ onNavigate, currentIndex }: NavbarProps) {
     }));
   };
 
-  // Toggle Mobile Menu
   const toggleMobile = () => setIsMobileOpen(!isMobileOpen);
 
   return (
     <>
+      {/* FIX ALIGNMENT: 
+         1. justifyContent: 'flex-start' -> Bach kolchi ybda mn lisser.
+         2. gap: '20px' -> Espace bin logo, switcher w menu.
+      */}
       <nav 
         className={styles.nav}
-        style={{ transform: isVisible ? 'translate(-50%, 0)' : 'translate(-50%, -150%)' }}
+        style={{ 
+          transform: isVisible ? 'translate(-50%, 0)' : 'translate(-50%, -150%)',
+          justifyContent: 'flex-start', 
+          gap: '20px'
+        }}
       >
         <div className={styles.logo} onClick={() => { onNavigate(0); setIsMobileOpen(false); }}>
           SEO<span>MANIAK</span>
         </div>
 
-        {/* --- NOUVEAU : SESSION SWITCHER (Desktop) --- */}
-        <div className={styles.sessionSwitcher}>
+        {/* FIX SWITCHER: 
+           marginRight: '0' (oula sghir) -> Bach maydfe3ch l-menu l ga3 3la limen.
+           Kan-overrider l 'margin-right: auto' dyal CSS.
+        */}
+        <div className={styles.sessionSwitcher} style={{ marginRight: '10px' }}>
           <button 
             className={`${styles.sessionBtn} ${activeSession === 'S1' ? styles.sessionBtnActive : ''}`}
             onClick={() => setActiveSession('S1')}
@@ -97,10 +104,8 @@ export default function Navbar({ onNavigate, currentIndex }: NavbarProps) {
 
         {/* --- DESKTOP MENU --- */}
         <div className={styles.menu}>
-          {visibleSections.map(([name, startIndex], i) => {
+          {visibleSections.map(([name, startIndex]) => {
             const sectionItems = getSectionSlides(name, startIndex);
-            // Vérifier si l'index courant est dans cette section
-            // On doit calculer le endIndex pour savoir si c'est actif
             const keys = Object.keys(chapters);
             const keyIndex = keys.indexOf(name);
             const nextKey = keys[keyIndex + 1];
@@ -150,10 +155,13 @@ export default function Navbar({ onNavigate, currentIndex }: NavbarProps) {
           })}
         </div>
 
-        {/* --- MOBILE HAMBURGER BUTTON --- */}
+        {/* FIX MOBILE HAMBURGER:
+           marginLeft: 'auto' -> Bach f Mobile yb9a dima collé l limen
+        */}
         <button 
           className={`${styles.hamburger} ${isMobileOpen ? styles.open : ''}`} 
           onClick={toggleMobile}
+          style={{ marginLeft: 'auto' }}
         >
           <span className={styles.bar}></span>
           <span className={styles.bar}></span>
@@ -206,7 +214,6 @@ export default function Navbar({ onNavigate, currentIndex }: NavbarProps) {
                 {name} {isExpanded ? '▲' : '▼'}
               </button>
               
-              {/* Accordéon Mobile */}
               {isExpanded && (
                 <div className={styles.mobileSubMenu}>
                   {sectionItems.map((item) => (

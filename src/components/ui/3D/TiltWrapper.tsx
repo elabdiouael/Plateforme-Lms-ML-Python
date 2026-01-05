@@ -17,7 +17,8 @@ export default function TiltWrapper({ children }: { children: React.ReactNode })
   }, []);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (isMobile || !cardRef.current || !glowRef.current) return; // Stop si Mobile
+    // SECURITY CHECK: Si mobile, on arrête TOUT de suite
+    if (isMobile || !cardRef.current || !glowRef.current) return;
 
     const rect = cardRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;

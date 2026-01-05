@@ -1,132 +1,247 @@
+/* src/components/ui/InteractiveCode/InteractiveCode.module.css */
+
 .container {
   display: flex;
-  gap: 20px;
+  position: relative;
   width: 100%;
-  height: 400px; /* Hauteur fixe pour stabilité */
-  background: rgba(30, 30, 30, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
+  height: 550px;
+  background: rgba(8, 8, 10, 0.90);
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8);
+  
+  /* --- FIX FLOU (BLUR) SUR TEXTE 3D --- */
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  transform: translateZ(0); /* Force le GPU sans flou */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Partie Code (Gauche) */
-.codePanel {
-  flex: 2;
-  padding: 20px;
-  overflow-y: auto;
+/* --- LE PLASMA BORDER (Animation qui tourne) --- */
+.container::before {
+  content: "";
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: conic-gradient(
+    transparent, 
+    rgba(0, 243, 255, 0.4), 
+    transparent 30%
+  );
+  animation: rotate 6s linear infinite;
+  z-index: 0;
+}
+
+/* --- LE FOND INTERNE --- */
+.container::after {
+  content: "";
+  position: absolute;
+  inset: 1px; /* Bordure très fine */
+  background: #09090b; 
+  border-radius: 15px;
+  z-index: 0;
+}
+
+/* --- NOISE TEXTURE --- */
+.noiseOverlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* --- CONTENU PRINCIPAL --- */
+.innerWrapper {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+}
+
+/* --- HEADER TERMINAL --- */
+.header {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.controls { display: flex; gap: 8px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.red { background: #ff5f56; box-shadow: 0 0 10px rgba(255, 95, 86, 0.5); }
+.yellow { background: #ffbd2e; box-shadow: 0 0 10px rgba(255, 189, 46, 0.5); }
+.green { background: #27c93f; box-shadow: 0 0 10px rgba(39, 201, 63, 0.5); }
+
+.tabTitle {
   font-family: 'Consolas', monospace;
-  border-right: 1px solid rgba(255,255,255,0.1);
-}
-
-.line {
-  display: block;
-  padding: 2px 10px;
+  font-size: 0.8rem;
+  color: #a1a1aa;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 15px;
   border-radius: 4px;
-  cursor: help;
-  transition: all 0.2s;
-  color: #d4d4d4;
-  white-space: pre;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.line:hover, .lineActive {
-  background: rgba(0, 243, 255, 0.1);
-  box-shadow: inset 3px 0 0 #00f3ff; /* Barre bleu à gauche */
+.status {
+  font-family: 'Consolas', monospace;
+  font-size: 0.7rem;
+  color: #00f3ff;
+  letter-spacing: 1px;
+  display: flex; align-items: center; gap: 6px;
 }
+.statusDot { width: 6px; height: 6px; background: #00f3ff; border-radius: 50%; animation: pulse 2s infinite; }
 
-/* Partie Info (Droite) */
-.infoPanel {
+/* --- BODY (SPLIT VIEW) --- */
+.body {
+  display: flex;
   flex: 1;
-  padding: 25px;
-  background: rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+/* GAUCHE : LE CODE */
+.codeArea {
+  flex: 2;
+  padding: 20px 0;
+  overflow-y: auto;
+  font-family: 'Consolas', 'Fira Code', monospace;
+  font-size: 0.95rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  /* Scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: #333 transparent;
+}
+.codeArea::-webkit-scrollbar { width: 6px; }
+.codeArea::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+.lineRow {
+  display: flex;
+  padding: 4px 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.lineRow:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.activeRow {
+  background: rgba(0, 243, 255, 0.08) !important;
+  box-shadow: inset 3px 0 0 #00f3ff;
+}
+
+/* Le texte du code */
+.codeContent {
+  color: #e4e4e7;
+  white-space: pre-wrap;
+  transition: opacity 0.3s ease;
+}
+
+/* Focus Mode : Quand une ligne est active, les autres s'assombrissent */
+.dimmed { opacity: 0.3; filter: blur(0.5px); }
+
+.lineNum {
+  min-width: 30px;
+  text-align: right;
+  margin-right: 20px;
+  color: #52525b;
+  font-size: 0.8rem;
+  user-select: none;
+}
+
+/* --- SYNTAX HIGHLIGHTING CLASSES (Important) --- */
+.tokenComment { color: #6a9955; font-style: italic; }
+.tokenString { color: #ce9178; }
+.tokenKeyword { color: #c586c0; font-weight: bold; }
+.tokenBuiltin { color: #4fc1ff; }
+.tokenNumber { color: #b5cea8; }
+.tokenBool { color: #569cd6; }
+
+/* DROITE : L'ANALYSE (HUD) */
+.infoArea {
+  flex: 1.2;
+  background: rgba(0, 0, 0, 0.2);
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  padding: 30px;
 }
 
-.infoTitle {
+/* Grille HUD en fond */
+.gridBg {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+  background-size: 30px 30px;
+  pointer-events: none;
+}
+
+.infoContent {
+  position: relative;
+  z-index: 2;
+  animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.infoLabel {
   color: #00f3ff;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-  letter-spacing: 1px;
+  font-family: 'Consolas', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+}
+.infoLabel::after {
+  content: ""; flex: 1; height: 1px;
+  background: linear-gradient(90deg, rgba(0, 243, 255, 0.5), transparent);
 }
 
 .infoText {
   color: #fff;
-  font-size: 1.1rem;
+  font-size: 1rem;
   line-height: 1.6;
 }
 
-.placeholder {
-  color: #555;
-  font-style: italic;
+.emptyState {
   text-align: center;
+  color: #52525b;
+  font-family: 'Consolas', monospace;
+  font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
-/* --- MOBILE FIXES --- */
+
+.scannerLine {
+  width: 100%; height: 2px;
+  background: linear-gradient(90deg, transparent, #00f3ff, transparent);
+  animation: scan 2s linear infinite;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes rotate { 100% { transform: rotate(360deg); } }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+@keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes scan { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+/* Mobile */
 @media (max-width: 768px) {
-  .container {
-    flex-direction: column; /* Rje3 koulchi vertical */
-    height: auto; /* Tl9 l'hauteur bach yjbd 3la ra7to */
-    max-height: 80vh;
-  }
-
-  .codePanel {
-    flex: none;
-    height: 300px; /* L'code yakhod nss chacha */
-    border-right: none;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-  }
-
-  .infoPanel {
-    flex: none;
-    height: auto;
-    padding: 15px;
-    min-height: 150px;
-  }
-}
-/* ... Code l-9dim ... */
-
-/* Zid hada f l-kher */
-
-/* THE RISK SCANNER */
-.codePanel {
-  position: relative; /* Mouhim bach scanner yb9a ldakhel */
-}
-
-.codePanel::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 2px; /* Khet r9i9 */
-  background: #00f3ff;
-  box-shadow: 0 0 10px #00f3ff, 0 0 20px #00f3ff;
-  opacity: 0.5;
-  animation: scan 4s ease-in-out infinite;
-  pointer-events: none; /* Bach may-blokich clics */
-  z-index: 10;
-}
-
-/* Gradient effect ta7t l-laser */
-.codePanel::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 50px; /* Tray l-ta7t */
-  background: linear-gradient(to bottom, rgba(0, 243, 255, 0.1), transparent);
-  animation: scan 4s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 9;
-}
-
-@keyframes scan {
-  0%, 100% { top: 0%; opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  50% { top: 100%; }
+  .body { flex-direction: column; }
+  .codeArea { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); height: 50%; }
+  .infoArea { height: 50%; }
+  .container { height: 600px; }
 }

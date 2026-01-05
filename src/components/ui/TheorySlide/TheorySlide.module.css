@@ -1,0 +1,203 @@
+/* src/components/ui/TheorySlide/TheorySlide.module.css */
+
+.card {
+    /* Fond de base sombre mais pas noir total */
+    background: rgba(8, 8, 10, 0.90);
+    border-radius: 16px;
+    padding: 40px;
+    position: relative;
+    overflow: hidden; /* Important pour contenir le plasma */
+    min-height: 450px;
+    display: flex;
+    flex-direction: column;
+    
+    /* --- FIX QUALITÉ TEXTE 3D --- */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    backface-visibility: hidden;
+    transform: translateZ(0); /* Force le GPU */
+    will-change: transform;
+    
+    /* Ombre portée massive */
+    box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05);
+  }
+  
+  /* --- LE PLASMA BORDER (L'animation qui tourne) --- */
+  .card::before {
+    content: "";
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: conic-gradient(
+      transparent, 
+      rgba(0, 243, 255, 0.3), 
+      transparent 30%
+    );
+    animation: rotate 4s linear infinite;
+    z-index: 0;
+  }
+  
+  /* --- LE FOND INTERNE (Pour cacher le centre du plasma) --- */
+  .card::after {
+    content: "";
+    position: absolute;
+    inset: 2px; /* L'épaisseur de la bordure (2px) */
+    background: #0a0a0c; /* La couleur de fond réelle de la carte */
+    border-radius: 14px;
+    z-index: 0;
+  }
+  
+  /* --- TEXTURE "NOISE" (Grain Cinéma) --- */
+  .noiseOverlay {
+    position: absolute;
+    inset: 0;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  /* --- HEADER --- */
+  .headerBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .statusIndicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Consolas', monospace;
+    font-size: 0.7rem;
+    color: #00f3ff;
+    letter-spacing: 2px;
+    text-shadow: 0 0 5px rgba(0, 243, 255, 0.5);
+  }
+  
+  .dotPulse {
+    width: 6px; height: 6px;
+    background: #00f3ff;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #00f3ff;
+    animation: pulse 2s infinite;
+  }
+  
+  /* --- CONTENU --- */
+  .contentContainer {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+  }
+  
+  .title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 30px;
+    color: #fff;
+    letter-spacing: -1px;
+    /* Dégradé métallique sur le texte */
+    background: linear-gradient(to bottom, #ffffff, #a1a1aa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  /* --- LE TEXTE "MDOWI" (Bright Text) --- */
+  .textBlock {
+    font-size: 1.1rem;
+    color: #e0e0e0; /* Gris très clair par défaut */
+    line-height: 1.8; /* Plus d'espace pour lire */
+    margin-bottom: 18px;
+    animation: fadeInUp 0.5s ease forwards;
+    opacity: 0;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8); /* Ombre pour détacher le texte du fond */
+  }
+  
+  /* Le texte IMPORTANT (Gras) qui brille */
+  .glowingText {
+    color: #fff;
+    font-weight: 700;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* --- LISTES STYLÉES --- */
+  .listItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+  }
+  
+  .listItem:hover {
+    background: rgba(0, 243, 255, 0.05);
+    border-color: rgba(0, 243, 255, 0.3);
+    transform: translateX(5px);
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.1);
+  }
+  
+  .bulletPoint {
+    color: #00f3ff;
+    font-size: 1.2rem;
+    line-height: 1;
+    text-shadow: 0 0 10px #00f3ff;
+  }
+  
+  /* --- BOUTON --- */
+  .actionBtn {
+    margin-top: 40px;
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.1), transparent);
+    border: 1px solid rgba(0, 243, 255, 0.3);
+    color: #fff;
+    font-family: 'Consolas', monospace;
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+  }
+  
+  .actionBtn:hover {
+    background: rgba(0, 243, 255, 0.15);
+    border-color: #00f3ff;
+    box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
+    text-shadow: 0 0 8px #00f3ff;
+  }
+  
+  /* --- ANIMATIONS --- */
+  @keyframes rotate {
+    100% { transform: rotate(360deg); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Mobile */
+  @media (max-width: 768px) {
+    .card { padding: 20px; }
+    .title { font-size: 1.8rem; }
+    .textBlock { font-size: 1rem; }
+  }

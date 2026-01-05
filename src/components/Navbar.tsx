@@ -8,10 +8,19 @@ interface NavbarProps {
   currentIndex: number;
 }
 
+// Configuration des Séances
+const SESSIONS = {
+  S1: ["Exercices", "Algorithmes", "Data Structures", "OOP"],
+  S2: ["Project Prepa"]
+};
+
 export default function Navbar({ onNavigate, currentIndex }: NavbarProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [hoveredSection, setHoveredSection] = useState<string | null>(null);
-  const [expandedMobileSection, setExpandedMobileSection] = useState<string | null>(null); // Pour l'accordéon mobile
+  const [expandedMobileSection, setExpandedMobileSection] = useState<string | null>(null);
+  
+  // NOUVEAU : State pour la Session (Par défaut S1)
+  const [activeSession, setActiveSession] = useState<'S1' | 'S2'>('S1');
   
   // Smart Scroll Logic
   const [isVisible, setIsVisible] = useState(true);
@@ -33,11 +42,24 @@ export default function Navbar({ onNavigate, currentIndex }: NavbarProps) {
     return () => window.removeEventListener('scroll', controlNavbar);
   }, [lastScrollY, isMobileOpen]);
 
-  const sections = Object.entries(chapters);
+  // --- LOGIC DE FILTRAGE ---
+  // On récupère toutes les sections
+  const allSections = Object.entries(chapters);
+  
+  // On ne garde que celles de la session active
+  const visibleSections = allSections.filter(([name]) => 
+    SESSIONS[activeSession].includes(name)
+  );
 
   const getSectionSlides = (sectionName: string, startIndex: number, nextIndex?: number) => {
-    const endIndex = nextIndex ?? slides.length;
-    return slides.slice(startIndex, endIndex).map((slide, localIdx) => ({
+    // Astuce pour trouver la fin de la section même si elle n'est pas affichée
+    // On cherche l'index global dans 'chapters' pour calculer la longueur
+    const keys = Object.keys(chapters);
+    const keyIndex = keys.indexOf(sectionName);
+    const nextKey = keys[keyIndex + 1];
+    const realNextIndex = nextKey ? chapters[nextKey as keyof typeof chapters] : slides.length;
+
+    return slides.slice(startIndex, realNextIndex).map((slide, localIdx) => ({
       globalIndex: startIndex + localIdx,
       title: slide.title || `Question ${slide.id}`,
       type: slide.type
@@ -57,12 +79,34 @@ export default function Navbar({ onNavigate, currentIndex }: NavbarProps) {
           SEO<span>MANIAK</span>
         </div>
 
-        {/* --- DESKTOP MENU (Hidden on Mobile) --- */}
+        {/* --- NOUVEAU : SESSION SWITCHER (Desktop) --- */}
+        <div className={styles.sessionSwitcher}>
+          <button 
+            className={`${styles.sessionBtn} ${activeSession === 'S1' ? styles.sessionBtnActive : ''}`}
+            onClick={() => setActiveSession('S1')}
+          >
+            S1: BASICS
+          </button>
+          <button 
+            className={`${styles.sessionBtn} ${activeSession === 'S2' ? styles.sessionBtnActive : ''}`}
+            onClick={() => setActiveSession('S2')}
+          >
+            S2: PROJECT
+          </button>
+        </div>
+
+        {/* --- DESKTOP MENU --- */}
         <div className={styles.menu}>
-          {sections.map(([name, startIndex], i) => {
-            const nextStart = sections[i + 1]?.[1];
-            const sectionItems = getSectionSlides(name, startIndex, nextStart);
-            const isActive = currentIndex >= startIndex && (nextStart ? currentIndex < nextStart : true);
+          {visibleSections.map(([name, startIndex], i) => {
+            const sectionItems = getSectionSlides(name, startIndex);
+            // Vérifier si l'index courant est dans cette section
+            // On doit calculer le endIndex pour savoir si c'est actif
+            const keys = Object.keys(chapters);
+            const keyIndex = keys.indexOf(name);
+            const nextKey = keys[keyIndex + 1];
+            const endIndex = nextKey ? chapters[nextKey as keyof typeof chapters] : slides.length;
+            
+            const isActive = currentIndex >= startIndex && currentIndex < endIndex;
 
             return (
               <div 
@@ -123,11 +167,35 @@ export default function Navbar({ onNavigate, currentIndex }: NavbarProps) {
 
       {/* --- MOBILE FULLSCREEN MENU --- */}
       <div className={`${styles.mobileMenu} ${isMobileOpen ? styles.open : ''}`}>
-        {sections.map(([name, startIndex], i) => {
-          const nextStart = sections[i + 1]?.[1];
-          const sectionItems = getSectionSlides(name, startIndex, nextStart);
-          const isActive = currentIndex >= startIndex && (nextStart ? currentIndex < nextStart : true);
-          const isExpanded = expandedMobileSection === name;
+        
+        {/* Mobile Session Switcher */}
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+             <button 
+                className={`${styles.sessionBtn} ${activeSession === 'S1' ? styles.sessionBtnActive : ''}`}
+                onClick={() => setActiveSession('S1')}
+                style={{ fontSize: '1.2rem', padding: '10px 20px' }}
+              >
+                S1: BASICS
+              </button>
+              <button 
+                className={`${styles.sessionBtn} ${activeSession === 'S2' ? styles.sessionBtnActive : ''}`}
+                onClick={() => setActiveSession('S2')}
+                style={{ fontSize: '1.2rem', padding: '10px 20px' }}
+              >
+                S2: PROJECT
+              </button>
+        </div>
+
+        {visibleSections.map(([name, startIndex]) => {
+            const sectionItems = getSectionSlides(name, startIndex);
+            
+            const keys = Object.keys(chapters);
+            const keyIndex = keys.indexOf(name);
+            const nextKey = keys[keyIndex + 1];
+            const endIndex = nextKey ? chapters[nextKey as keyof typeof chapters] : slides.length;
+            const isActive = currentIndex >= startIndex && currentIndex < endIndex;
+            
+            const isExpanded = expandedMobileSection === name;
 
           return (
             <React.Fragment key={name}>
@@ -147,10 +215,10 @@ export default function Navbar({ onNavigate, currentIndex }: NavbarProps) {
                       className={`${styles.mobileSubItem} ${currentIndex === item.globalIndex ? styles.mobileSubItemActive : ''}`}
                       onClick={() => {
                         onNavigate(item.globalIndex);
-                        setIsMobileOpen(false); // Ferme le menu après clic
+                        setIsMobileOpen(false);
                       }}
                     >
-                       • {item.title}
+                        • {item.title}
                     </div>
                   ))}
                 </div>

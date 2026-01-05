@@ -8,7 +8,7 @@ import Landing from '@/components/Landing';
 import Background from '@/components/ui/Background/Background';
 import ExerciseSlide from '@/components/ui/ExerciseSlide/ExerciseSlide';
 import InteractiveCode from '@/components/ui/InteractiveCode/InteractiveCode';
-import Typewriter from '@/components/ui/Typewriter';
+import TheorySlide from '@/components/ui/TheorySlide/TheorySlide'; // <-- NOUVEL IMPORT
 
 // 👇 Moteur 3D & Effets
 import TiltWrapper from '@/components/ui/3D/TiltWrapper';
@@ -31,10 +31,13 @@ export default function Home() {
 
   // --- LOGIC: Déterminer la section pour le Background ---
   const getSectionType = () => {
+    // Note: Assure-toi que tes clés 'chapters' correspondent à celles dans content.ts
+    // Exemple : "Project Prepa" au lieu de juste "OOP" si tu as ajouté la nouvelle section
     if (index < chapters["Algorithmes"]) return 'exercise'; // Rouge
     if (index < chapters["Data Structures"]) return 'algorithms'; // Vert
     if (index < chapters["OOP"]) return 'lists'; // Bleu
-    return 'oop'; // Violet
+    if (index < (chapters["Project Prepa"] || 999)) return 'oop'; // Violet
+    return 'project'; // Cyan/Tech (Nouveau style pour le projet)
   };
 
   // --- NAVIGATION ---
@@ -55,7 +58,7 @@ export default function Home() {
   if (!started) {
     return (
       <main>
-        <Background section="landing" /> 
+        {/* On peut garder Background ici ou laisser Landing gérer son propre fond */}
         <Landing onStart={() => setStarted(true)} />
       </main>
     );
@@ -101,74 +104,14 @@ export default function Home() {
           </div>
         )}
 
-        {/* --- TYPE: THEORIE --- */}
+        {/* --- TYPE: THEORIE (BRIEFING DATA) --- */}
+        {/* C'est ici qu'on a fait l'upgrade x1000 */}
         {currentSlide.type === 'theory' && (
           <TiltWrapper>
-            <div className="glass-panel" style={{ 
-              padding: isMobile ? '25px' : '40px', 
-              borderRadius: '16px', 
-              background: 'rgba(20, 20, 20, 0.85)',
-              backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              textAlign: 'left',
-              animation: 'fadeIn 0.5s',
-              height: '100%',
-              boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
-            }}>
-              <h1 style={{ 
-                fontSize: isMobile ? '1.8rem' : '2.5rem', 
-                marginBottom: '30px', 
-                textAlign: 'center',
-                background: 'linear-gradient(to right, #fff, #999)', 
-                WebkitBackgroundClip: 'text', 
-                color: 'transparent',
-                textShadow: '0 0 30px rgba(255,255,255,0.1)'
-              }}>
-                {currentSlide.title}
-              </h1>
-              
-              <div style={{ fontSize: isMobile ? '1rem' : '1.2rem', lineHeight: '1.8', marginBottom: '40px' }}>
-                {currentSlide.content.split('\n').map((line: string, i: number) => {
-                  const cleanLine = line.trim();
-                  const isHeader = cleanLine.startsWith('**');
-                  const textToShow = cleanLine.replace(/\*\*/g, '');
-
-                  if (!textToShow) return <br key={i} />;
-
-                  return (
-                    <div key={i} style={{ 
-                      marginBottom: isHeader ? '10px' : '5px',
-                      marginTop: isHeader ? '25px' : '0'
-                    }}>
-                      <Typewriter 
-                        text={textToShow} 
-                        speed={5} 
-                        color={isHeader ? '#ff4757' : '#eee'} 
-                      />
-                      {isHeader && (
-                        <div style={{ 
-                          width: '40px', 
-                          height: '2px', 
-                          background: '#ff4757', 
-                          marginTop: '5px', 
-                          opacity: 0.8,
-                          boxShadow: '0 0 10px #ff4757'
-                        }} />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-              
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
-                 {index > 0 && (
-                  <button onClick={goPrev} style={btnSecondary}>← Retour</button>
-                )}
-                <button onClick={goNext} style={btnPrimary}>
-                  Voir le Code →
-                </button>
-              </div>
-            </div>
+            <TheorySlide 
+              data={currentSlide} 
+              onNext={goNext} 
+            />
           </TiltWrapper>
         )}
 
@@ -182,7 +125,7 @@ export default function Home() {
               <span style={{ 
                 fontSize: '0.8rem', 
                 background: 'rgba(0, 243, 255, 0.1)', 
-                color: '#00f3ff',
+                color: '#00f3ff', 
                 padding: '4px 8px', 
                 borderRadius: '4px', 
                 border: '1px solid rgba(0, 243, 255, 0.3)',
@@ -193,18 +136,12 @@ export default function Home() {
             </div>
             
             <TiltWrapper>
-               <div style={{ 
-                 background: '#1e1e1e', 
-                 borderRadius: '12px', 
-                 overflow: 'hidden',
-                 border: '1px solid #333',
-                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-               }}>
-                  <InteractiveCode 
-                    code={currentSlide.code} 
-                    explanations={currentSlide.explanations} 
-                  />
-               </div>
+                {/* Note: InteractiveCode gère son propre style de "card" via son module CSS */}
+                 <InteractiveCode 
+                   code={currentSlide.code} 
+                   explanations={currentSlide.explanations} 
+                   globalExplanation={currentSlide.globalExplanation} // Support du nouveau champ global
+                 />
             </TiltWrapper>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '30px' }}>
@@ -223,7 +160,7 @@ export default function Home() {
   );
 }
 
-// Styles Boutons Responsive
+// Styles Boutons Responsive (Pour la navigation Code Interactif)
 const btnPrimary = {
   padding: '12px 30px', fontSize: '1rem', background: '#007acc', 
   color: 'white', border: 'none', borderRadius: '6px', 

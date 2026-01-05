@@ -26,11 +26,12 @@ export default function TiltWrapper({ children }: { children: React.ReactNode })
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
     
-    const rotateX = ((y - centerY) / centerY) * -7; 
-    const rotateY = ((x - centerX) / centerX) * 7;
+    // Rotation légère pour éviter trop de déformation
+    const rotateX = ((y - centerY) / centerY) * -5; 
+    const rotateY = ((x - centerX) / centerX) * 5;
 
-    cardRef.current.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-    glowRef.current.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.1), transparent 80%)`;
+    cardRef.current.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.01, 1.01, 1.01)`;
+    glowRef.current.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.05), transparent 80%)`;
   };
 
   const handleMouseLeave = () => {
@@ -45,7 +46,7 @@ export default function TiltWrapper({ children }: { children: React.ReactNode })
       onMouseLeave={handleMouseLeave}
       style={{
         display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%',
-        padding: isMobile ? '10px 0' : '20px' // Moins d'espace sur mobile
+        padding: isMobile ? '10px 0' : '20px'
       }}
     >
       <div
@@ -56,7 +57,12 @@ export default function TiltWrapper({ children }: { children: React.ReactNode })
           willChange: 'transform',
           transformStyle: 'preserve-3d',
           borderRadius: '16px',
-          width: '100%' // Full width sur mobile
+          width: '100%',
+          
+          /* --- FIX FLOU (BLUR) IMPORTANT --- */
+          backfaceVisibility: 'hidden',
+          transform: 'translateZ(0)', // Force GPU crisp rendering
+          WebkitFontSmoothing: 'antialiased'
         }}
       >
         {!isMobile && (
@@ -64,7 +70,7 @@ export default function TiltWrapper({ children }: { children: React.ReactNode })
             ref={glowRef}
             style={{
               position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-              borderRadius: '16px', pointerEvents: 'none', zIndex: 2, mixBlendMode: 'overlay'
+              borderRadius: '16px', pointerEvents: 'none', zIndex: 5, mixBlendMode: 'overlay'
             }} 
           />
         )}

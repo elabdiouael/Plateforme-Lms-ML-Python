@@ -1,76 +1,334 @@
 'use client';
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function Landing({ onStart }: { onStart: () => void }) {
+  const [mounted, setMounted] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // State pour la souris (Position X/Y)
+  const [mouse, setMouse] = useState({ x: 0, y: 0, centerX: 0, centerY: 0 });
+
+  useEffect(() => {
+    setMounted(true);
+    
+    const handleMove = (e: MouseEvent) => {
+      if (!containerRef.current) return;
+      const { innerWidth, innerHeight } = window;
+      
+      // Calcul pour le 3D Tilt (Rotation)
+      const xPct = (e.clientX / innerWidth - 0.5) * 2; // de -1 à 1
+      const yPct = (e.clientY / innerHeight - 0.5) * 2;
+      
+      setMouse({ 
+        x: xPct, 
+        y: yPct,
+        centerX: e.clientX,
+        centerY: e.clientY
+      });
+    };
+
+    window.addEventListener('mousemove', handleMove);
+    return () => window.removeEventListener('mousemove', handleMove);
+  }, []);
+
   return (
-    <div style={{
-      height: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      textAlign: 'center',
-      position: 'relative',
-      zIndex: 10
-    }}>
-      {/* 3D CUBE EFFECT (CSS Pure) */}
-      <div className="scene" style={{ perspective: '1000px', marginBottom: '50px' }}>
-        <div className="cube" style={{
-          width: '100px', height: '100px', position: 'relative',
-          transformStyle: 'preserve-3d', animation: 'spin3D 10s infinite linear'
-        }}>
-          {/* Faces du cube (Abstraites) */}
-          <div style={{...faceStyle, transform: 'rotateY(0deg) translateZ(50px)', border: '2px solid #00f3ff', background: 'rgba(0,243,255,0.1)'}}></div>
-          <div style={{...faceStyle, transform: 'rotateY(90deg) translateZ(50px)', border: '2px solid #bc13fe', background: 'rgba(188,19,254,0.1)'}}></div>
-          <div style={{...faceStyle, transform: 'rotateY(180deg) translateZ(50px)', border: '2px solid #00f3ff', background: 'rgba(0,243,255,0.1)'}}></div>
-          <div style={{...faceStyle, transform: 'rotateY(-90deg) translateZ(50px)', border: '2px solid #bc13fe', background: 'rgba(188,19,254,0.1)'}}></div>
-          <div style={{...faceStyle, transform: 'rotateX(90deg) translateZ(50px)', border: '2px solid #fff', background: 'rgba(255,255,255,0.1)'}}></div>
-          <div style={{...faceStyle, transform: 'rotateX(-90deg) translateZ(50px)', border: '2px solid #fff', background: 'rgba(255,255,255,0.1)'}}></div>
+    <div className="landing-root" ref={containerRef}>
+      
+      {/* --- 1. DYNAMIC BACKGROUND (GRAIN + SPOTLIGHT) --- */}
+      <div className="noise-overlay"></div>
+      
+      {/* Le Spotlight qui suit la souris */}
+      <div 
+        className="spotlight" 
+        style={{ 
+          background: `radial-gradient(600px circle at ${mouse.centerX}px ${mouse.centerY}px, rgba(255,255,255,0.07), transparent 40%)` 
+        }}
+      />
+
+      {/* --- 2. 3D CONTAINER (Tout bouge ici) --- */}
+      <div 
+        className="tilt-wrapper"
+        style={{
+          transform: `perspective(1000px) rotateX(${mouse.y * -2}deg) rotateY(${mouse.x * 2}deg)`
+        }}
+      >
+        
+        {/* HERO CONTENT */}
+        <div className={`hero-content ${mounted ? 'active' : ''}`}>
+          
+          {/* BADGE SUPERIEUR */}
+          <div className="top-badge">
+            <span className="live-dot"></span>
+            <span className="badge-txt">SYSTEM ONLINE • V2.0</span>
+          </div>
+
+          {/* TITRE MASSIF */}
+          <h1 className="mega-title">
+            <span className="line line-1">MASTER THE</span>
+            <span className="line line-2">ALGORITHM.</span>
+          </h1>
+
+          {/* SOUS-TITRE AVEC BARRE */}
+          <div className="sub-container">
+            <div className="vertical-bar"></div>
+            <p className="description">
+              Devenez un <strong>Ingénieur Data Confirmé</strong>. <br/>
+              Une approche structurelle du code brut à l'intelligence artificielle.
+            </p>
+          </div>
+
+          {/* SIGNATURE DE L'ARCHITECTE */}
+          <div className="architect-badge">
+            <div className="arch-avatar">EO</div>
+            <div className="arch-info">
+              <span className="arch-label">Designed by</span>
+              <span className="arch-name">ELABDI OUAIL</span>
+            </div>
+          </div>
+
+          {/* BOUTON D'ENTRÉE (MAGNETIC) */}
+          <button onClick={onStart} className="enter-btn">
+            <span className="btn-bg"></span>
+            <span className="btn-text">INITIALISER LE PROTOCOLE</span>
+            <span className="btn-icon">→</span>
+          </button>
+
         </div>
       </div>
 
-      {/* TITRES */}
-      <h1 style={{ fontSize: '4rem', fontWeight: '900', letterSpacing: '-2px', marginBottom: '10px' }}>
-        <span style={{ color: '#fff' }}>SEO</span>
-        <span style={{ color: '#00f3ff', textShadow: '0 0 20px rgba(0,243,255,0.5)' }}>MANIAK</span>
-      </h1>
-      
-      <h2 style={{ fontSize: '1.2rem', color: '#888', marginBottom: '40px', fontWeight: '400', letterSpacing: '2px', textTransform: 'uppercase' }}>
-        Elabdi Ouail <span style={{ color: '#bc13fe' }}>//</span> Séance 1 : Python Fundamentals & ML Prep
-      </h2>
+      {/* --- FOOTER FLOTTANT --- */}
+      <div className="footer-hud">
+        <div className="hud-item">
+          <span className="hud-label">LATENCY</span>
+          <span className="hud-val text-green">12ms</span>
+        </div>
+        <div className="hud-item">
+          <span className="hud-label">CORE</span>
+          <span className="hud-val">PYTHON 3.10</span>
+        </div>
+        <div className="hud-item">
+          <span className="hud-label">SECURE</span>
+          <span className="hud-val text-blue">ENCRYPTED</span>
+        </div>
+      </div>
 
-      {/* START BUTTON */}
-      <button 
-        onClick={onStart}
-        style={{
-          padding: '15px 50px',
-          fontSize: '1.2rem',
-          fontWeight: 'bold',
-          color: '#000',
-          background: '#00f3ff',
-          border: 'none',
-          borderRadius: '50px',
-          cursor: 'pointer',
-          boxShadow: '0 0 20px rgba(0,243,255,0.4)',
-          transition: 'transform 0.2s, box-shadow 0.2s'
-        }}
-        onMouseOver={(e) => {
-          e.currentTarget.style.transform = 'scale(1.05)';
-          e.currentTarget.style.boxShadow = '0 0 40px rgba(0,243,255,0.6)';
-        }}
-        onMouseOut={(e) => {
-          e.currentTarget.style.transform = 'scale(1)';
-          e.currentTarget.style.boxShadow = '0 0 20px rgba(0,243,255,0.4)';
-        }}
-      >
-        Lancer la simulation 🚀
-      </button>
+      <style jsx>{`
+        /* --- GLOBAL --- */
+        .landing-root {
+          height: 100vh;
+          width: 100vw;
+          background-color: #050505;
+          color: #fff;
+          overflow: hidden;
+          position: relative;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
 
+        /* --- BACKGROUND FX --- */
+        .noise-overlay {
+          position: absolute;
+          inset: 0;
+          opacity: 0.05;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        .spotlight {
+          position: absolute;
+          inset: 0;
+          z-index: 2;
+          pointer-events: none;
+        }
+
+        /* --- 3D WRAPPER --- */
+        .tilt-wrapper {
+          position: relative;
+          z-index: 10;
+          width: 100%;
+          max-width: 1200px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          transition: transform 0.1s ease-out; /* Smooth follow */
+          transform-style: preserve-3d;
+        }
+
+        /* --- CONTENT --- */
+        .hero-content {
+          text-align: center;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          transform: translateZ(50px); /* Le texte sort de l'écran */
+        }
+
+        /* Badge */
+        .top-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          border: 1px solid rgba(255,255,255,0.1);
+          padding: 8px 16px;
+          border-radius: 30px;
+          background: rgba(255,255,255,0.03);
+          margin-bottom: 40px;
+          opacity: 0;
+          transform: translateY(-20px);
+          transition: all 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .live-dot {
+          width: 6px; height: 6px; background: #00f3ff; border-radius: 50%;
+          box-shadow: 0 0 10px #00f3ff;
+          animation: pulse 2s infinite;
+        }
+        .badge-txt { font-size: 0.7rem; letter-spacing: 2px; color: #888; font-weight: 600; }
+
+        /* Mega Title */
+        .mega-title {
+          display: flex;
+          flex-direction: column;
+          font-size: 7rem;
+          line-height: 0.9;
+          font-weight: 800;
+          letter-spacing: -4px;
+          margin-bottom: 40px;
+          position: relative;
+        }
+        .line {
+          display: block;
+          background: linear-gradient(to bottom, #fff 30%, #666 100%);
+          -webkit-background-clip: text;
+          color: transparent;
+          opacity: 0;
+          transform: translateY(50px) rotateX(20deg);
+          transition: all 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .line-2 { 
+          transition-delay: 0.1s; 
+          background: linear-gradient(to bottom, #fff 20%, #00f3ff 100%); /* Touche de cyan */
+          -webkit-background-clip: text;
+        }
+
+        /* Description */
+        .sub-container {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          margin-bottom: 60px;
+          opacity: 0;
+          transform: translateY(20px);
+          transition: all 1s 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .vertical-bar { width: 2px; height: 40px; background: #333; }
+        .description {
+          text-align: left;
+          font-size: 1.1rem;
+          color: #888;
+          line-height: 1.5;
+        }
+        .description strong { color: #fff; font-weight: 500; }
+
+        /* Architect Badge */
+        .architect-badge {
+          position: absolute;
+          right: -100px;
+          top: 50%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+          opacity: 0;
+          transform: translateX(20px);
+          transition: all 1s 0.6s ease;
+        }
+        .arch-avatar {
+          width: 50px; height: 50px; border-radius: 50%;
+          border: 1px solid rgba(255,255,255,0.2);
+          display: flex; align-items: center; justify-content: center;
+          font-weight: bold; color: #fff; font-size: 0.9rem;
+          background: rgba(255,255,255,0.05);
+        }
+        .arch-info { display: flex; flex-direction: column; text-align: center; }
+        .arch-label { font-size: 0.6rem; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+        .arch-name { font-size: 0.8rem; color: #fff; letter-spacing: 2px; font-weight: 600; }
+
+        /* Button */
+        .enter-btn {
+          position: relative;
+          padding: 20px 50px;
+          background: transparent;
+          border: 1px solid rgba(255,255,255,0.2);
+          color: #fff;
+          font-size: 1rem;
+          font-weight: 600;
+          letter-spacing: 2px;
+          cursor: pointer;
+          overflow: hidden;
+          transition: all 0.4s ease;
+          opacity: 0;
+          transform: translateY(20px);
+          transition: opacity 1s 0.4s, transform 1s 0.4s, border-color 0.3s;
+        }
+        .enter-btn:hover {
+          border-color: #fff;
+          transform: scale(1.05);
+        }
+        .btn-bg {
+          position: absolute;
+          top: 0; left: 0; width: 100%; height: 100%;
+          background: #fff;
+          transform: scaleX(0);
+          transform-origin: left;
+          transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+          z-index: 0;
+        }
+        .enter-btn:hover .btn-bg { transform: scaleX(1); }
+        .btn-text { position: relative; z-index: 1; transition: color 0.4s; }
+        .enter-btn:hover .btn-text { color: #000; }
+        .btn-icon { position: relative; z-index: 1; margin-left: 10px; transition: color 0.4s, transform 0.4s; display: inline-block; }
+        .enter-btn:hover .btn-icon { color: #000; transform: translateX(5px); }
+
+        /* Footer HUD */
+        .footer-hud {
+          position: absolute;
+          bottom: 40px;
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          gap: 60px;
+          opacity: 0;
+          transition: opacity 1s 0.8s;
+        }
+        .hud-item { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .hud-label { font-size: 0.6rem; color: #444; letter-spacing: 2px; font-weight: 700; }
+        .hud-val { font-size: 0.8rem; color: #666; font-family: 'Consolas', monospace; }
+        .text-green { color: #00ff41; text-shadow: 0 0 10px rgba(0, 255, 65, 0.3); }
+        .text-blue { color: #00f3ff; text-shadow: 0 0 10px rgba(0, 243, 255, 0.3); }
+
+        /* --- ACTIVE STATES (ENTRY ANIMATION) --- */
+        .active .top-badge { opacity: 1; transform: translateY(0); }
+        .active .line { opacity: 1; transform: translateY(0) rotateX(0); }
+        .active .sub-container { opacity: 1; transform: translateY(0); }
+        .active .enter-btn { opacity: 1; transform: translateY(0); }
+        .active .architect-badge { opacity: 1; transform: translateX(0); }
+        .landing-root:has(.active) .footer-hud { opacity: 1; }
+
+        /* --- ANIMATIONS --- */
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+          .mega-title { font-size: 3.5rem; letter-spacing: -2px; }
+          .architect-badge { position: relative; right: auto; top: auto; margin-bottom: 30px; transform: translateY(10px); }
+          .footer-hud { display: none; }
+          .sub-container { flex-direction: column; text-align: center; }
+          .vertical-bar { width: 40px; height: 2px; }
+        }
+      `}</style>
     </div>
   );
 }
-
-const faceStyle: React.CSSProperties = {
-  position: 'absolute', width: '100px', height: '100px',
-  boxShadow: '0 0 15px inset rgba(255,255,255,0.1)'
-};

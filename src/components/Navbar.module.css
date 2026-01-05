@@ -8,7 +8,7 @@
   width: 90%;
   max-width: 1100px;
   height: 75px;
-  background: rgba(8, 8, 12, 0.7); /* Chwiya transparent kter */
+  background: rgba(8, 8, 12, 0.7);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -34,11 +34,53 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  
+  /* Separation avec le Switcher */
+  margin-right: 20px;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  padding-right: 20px;
 }
 .logo span { 
   color: #00f3ff; 
   text-shadow: 0 0 15px rgba(0, 243, 255, 0.8);
   animation: flicker 4s infinite;
+}
+
+/* --- SESSION SWITCHER (NOUVEAU) --- */
+.sessionSwitcher {
+  display: flex;
+  gap: 5px;
+  margin-right: auto; /* Ydff3 l-menu l-jiha lkhra */
+  background: rgba(255, 255, 255, 0.03);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sessionBtn {
+  background: transparent;
+  border: none;
+  color: #666;
+  font-family: 'Consolas', monospace;
+  font-weight: bold;
+  font-size: 0.75rem;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.sessionBtn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sessionBtnActive {
+  background: rgba(0, 243, 255, 0.15) !important;
+  color: #00f3ff !important;
+  box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
+  border: 1px solid rgba(0, 243, 255, 0.2);
 }
 
 /* --- MENU --- */
@@ -54,7 +96,7 @@
   height: 60%;
   display: flex;
   align-items: center;
-  perspective: 1000px; /* IMPORTANT POUR LA 3D */
+  perspective: 1000px;
 }
 
 .btn {
@@ -87,19 +129,15 @@
   font-weight: 800;
 }
 
-/* --- 3D DROPDOWN (HOLOGRAM STYLE) --- */
+/* --- 3D DROPDOWN --- */
 .dropdown {
   position: absolute;
-  top: 100%; /* Colle au bouton */
+  top: 100%;
   left: 50%;
   transform: translateX(-50%);
   width: 380px;
-  
-  /* Zone de sécurité invisible (Bridge) */
   padding-top: 20px; 
-  
   z-index: 1000;
-  /* L'animation d'ouverture 3D */
   animation: hologramOpen 0.4s cubic-bezier(0.23, 1, 0.32, 1) forwards;
   transform-origin: top center;
 }
@@ -109,18 +147,14 @@
   border: 1px solid rgba(0, 243, 255, 0.3);
   border-radius: 16px;
   padding: 10px;
-  
-  /* Grid pattern Cyberpunk */
   background-image: 
     linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
   background-size: 30px 30px;
-  
   box-shadow: 
     0 20px 50px rgba(0,0,0,0.9),
     0 0 0 1px rgba(0, 243, 255, 0.1),
     inset 0 0 30px rgba(0, 243, 255, 0.02);
-    
   backdrop-filter: blur(50px);
 }
 
@@ -138,12 +172,6 @@
   align-items: center;
 }
 
-.pulse {
-  color: #0aff0a;
-  animation: pulse 1.5s infinite;
-  text-shadow: 0 0 5px #0aff0a;
-}
-
 .dropdownList {
   max-height: 400px;
   overflow-y: auto;
@@ -156,7 +184,7 @@
 .dropdownList::-webkit-scrollbar { width: 3px; }
 .dropdownList::-webkit-scrollbar-thumb { background: #00f3ff; border-radius: 2px; }
 
-/* --- ITEMS ANIMATION (STAGGER) --- */
+/* --- ITEMS ANIMATION --- */
 .dropdownItem {
   padding: 12px 15px;
   border-radius: 8px;
@@ -168,8 +196,6 @@
   gap: 12px;
   font-family: 'Consolas', monospace;
   border: 1px solid transparent;
-  
-  /* Initial State pour l'animation */
   opacity: 0;
   transform: translateX(-10px);
   animation: itemSlideIn 0.3s ease forwards;
@@ -179,7 +205,7 @@
   background: rgba(255, 255, 255, 0.05);
   color: #fff;
   border-color: rgba(0, 243, 255, 0.2);
-  transform: translateX(5px) !important; /* Force le mouvement au hover */
+  transform: translateX(5px) !important;
   box-shadow: 0 0 15px rgba(0, 243, 255, 0.05);
 }
 
@@ -204,14 +230,8 @@
 
 /* --- ANIMATIONS --- */
 @keyframes hologramOpen {
-  0% { 
-    opacity: 0; 
-    transform: translateX(-50%) rotateX(-20deg) scale(0.9);
-  }
-  100% { 
-    opacity: 1; 
-    transform: translateX(-50%) rotateX(0deg) scale(1);
-  }
+  0% { opacity: 0; transform: translateX(-50%) rotateX(-20deg) scale(0.9); }
+  100% { opacity: 1; transform: translateX(-50%) rotateX(0deg) scale(1); }
 }
 
 @keyframes itemSlideIn {
@@ -223,10 +243,6 @@
   50% { opacity: 0.8; }
   52% { opacity: 0.2; }
   54% { opacity: 0.8; }
-}
-
-@keyframes pulse {
-  0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; }
 }
 
 /* --- PROGRESS BAR --- */
@@ -242,26 +258,14 @@
 }
 
 /* --- MOBILE --- */
-@media (max-width: 768px) {
-  .nav { padding: 0 15px; height: 60px; top: 0; border-radius: 0; width: 100%; border: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
-  .menu { overflow-x: auto; padding-right: 20px; }
-  .dropdown { width: 95%; top: 65px; padding-top: 5px; animation: none; opacity: 1; transform: translateX(-50%); }
-  .dropdownContent { backdrop-filter: blur(10px); }
-  .dropdownItem { opacity: 1; transform: none; animation: none; }
-}
-/* ... Garde le code existant Desktop ... */
-
-/* ZID HADCHI LTA7T */
-
-/* --- MOBILE HAMBURGER ICON --- */
 .hamburger {
-  display: none; /* Caché sur PC */
+  display: none;
   flex-direction: column;
   gap: 5px;
   background: none;
   border: none;
   cursor: pointer;
-  z-index: 10001; /* Fo9 koulchi */
+  z-index: 10001;
 }
 
 .bar {
@@ -272,12 +276,10 @@
   box-shadow: 0 0 5px #00f3ff;
 }
 
-/* Animation Burger -> X */
 .hamburger.open .bar:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); background: #ff0055; }
 .hamburger.open .bar:nth-child(2) { opacity: 0; }
 .hamburger.open .bar:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); background: #ff0055; }
 
-/* --- MOBILE FULLSCREEN MENU (CYBER DECK) --- */
 .mobileMenu {
   position: fixed;
   top: 0; left: 0; width: 100vw; height: 100vh;
@@ -289,14 +291,10 @@
   justify-content: center;
   align-items: center;
   gap: 20px;
-  
-  /* Animation Entrée */
   opacity: 0;
   pointer-events: none;
   transform: scale(0.95);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  
-  /* Grid Background */
   background-image: 
     linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
@@ -356,8 +354,10 @@
 
 /* --- RESPONSIVE RULES --- */
 @media (max-width: 768px) {
-  .menu { display: none; } /* On cache le menu Desktop */
-  .hamburger { display: flex; } /* On affiche le Burger */
+  .menu { display: none; }
+  .sessionSwitcher { display: none; } /* On cache le switcher desktop */
+  .hamburger { display: flex; }
+  .logo { border: none; } /* On enlève le séparateur sur mobile */
   
   .nav {
     padding: 0 20px;
